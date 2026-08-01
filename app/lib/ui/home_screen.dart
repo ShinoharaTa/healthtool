@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _sync_() async {
+  Future<void> _runSync() async {
     final scope = AppScope.of(context);
     final ok = await ensureHealthPermissions(context, scope.health);
     if (!ok) return;
@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, _) => _body(context, sync),
             ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: sync?.status is SyncRunning ? null : _sync_,
+        onPressed: sync?.status is SyncRunning ? null : _runSync,
         icon: const Icon(Icons.sync),
         label: const Text('今すぐ同期'),
       ),
