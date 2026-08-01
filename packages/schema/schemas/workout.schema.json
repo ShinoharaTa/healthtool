@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://healthtool.app/schemas/workout.schema.json",
+  "title": "Workout",
+  "description": "users/{uid}/workouts/{id} — 1回の運動セッション。ドキュメント ID は Health Connect の metadata.id。",
+  "type": "object",
+  "required": ["schemaVersion", "id", "date", "tz", "type", "startAt", "endAt", "durationMin", "source"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "id": { "type": "string" },
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "tz": { "type": "string" },
+    "type": {
+      "type": "string",
+      "description": "Health Connect の ExerciseType 名をそのまま保持する。例: RUNNING, WALKING, STRENGTH_TRAINING"
+    },
+    "title": { "type": ["string", "null"] },
+    "startAt": { "type": "string", "format": "date-time" },
+    "endAt": { "type": "string", "format": "date-time" },
+    "durationMin": { "type": "number", "minimum": 0 },
+    "kcal": { "type": ["number", "null"], "minimum": 0 },
+    "distanceM": { "type": ["number", "null"], "minimum": 0 },
+    "steps": { "type": ["integer", "null"], "minimum": 0 },
+    "avgHrBpm": { "type": ["number", "null"] },
+    "maxHrBpm": { "type": ["number", "null"] },
+    "source": { "type": "string" },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

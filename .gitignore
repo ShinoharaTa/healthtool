@@ -1,0 +1,43 @@
+# 依存
+node_modules/
+.pnp.*
+
+# ビルド生成物
+dist/
+build/
+.next/
+out/
+
+# 生成コード（スキーマから再生成できるので追跡しない）
+packages/schema/src/generated/
+app/lib/models/generated/
+
+# Flutter / Dart
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/android/.gradle/
+app/android/local.properties
+app/android/app/google-services.json
+app/ios/Pods/
+app/ios/Runner/GoogleService-Info.plist
+*.iml
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+*-debug.log
+
+# 秘密情報
+.env
+.env.*
+!.env.example
+serviceAccountKey*.json
+
+# エディタ / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

@@ -1,0 +1,122 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 歩数の取得に必要。Health Connect 経由でも端末によっては要求される。 -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <!-- バックグラウンド同期の完了通知用。 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!--
+      Health Connect の読み取り権限。
+      ここに宣言していない型は requestAuthorization しても永久に拒否されるため、
+      「取れるか分からない型」も含めて宣言しておき、実際に何が取れるかはアプリ内の
+      Capability Probe 画面で確認する。書き込みは一切行わないので WRITE は宣言しない。
+    -->
+    <!-- 活動量 -->
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED"/>
+    <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED"/>
+    <uses-permission android:name="android.permission.health.READ_EXERCISE"/>
+    <!-- 心拍とバイタル -->
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION"/>
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE"/>
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE"/>
+    <!-- 睡眠 -->
+    <uses-permission android:name="android.permission.health.READ_SLEEP"/>
+    <!-- 体組成 -->
+    <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT"/>
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE"/>
+    <!-- 水分 -->
+    <uses-permission android:name="android.permission.health.READ_HYDRATION"/>
+
+    <!--
+      30日より前のデータを読むために必須。これが無いと初回バックフィルが直近30日で頭打ちになる。
+      ユーザーの明示的な許可が別途必要な runtime permission。
+    -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
+    <!-- 定期同期をアプリがフォアグラウンドに無い状態で走らせるために必要。 -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"/>
+
+    <!--
+      Health Connect アプリの存在確認と、権限説明画面へのインテント解決に必要。
+      Android 11 以降のパッケージ可視性制限により、これが無いと
+      「Health Connect が入っていない」と誤判定する。
+    -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata"/>
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+        </intent>
+        <!-- Flutter エンジンの ProcessTextPlugin が使う。 -->
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+
+    <application
+        android:label="healthtool"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <!--
+              Health Connect の権限画面から「このアプリがデータを使う理由」を開いたときに呼ばれる。
+              Android 13 以下 / Health Connect が別 APK の環境で使われる導線。
+              受けられないと Play の健康アプリ審査で落ちる。
+            -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+            </intent-filter>
+        </activity>
+
+        <!--
+          Android 14 以降、Health Connect が OS に統合された環境向けの同等の導線。
+          activity-alias で MainActivity に流し、アプリ側は起動インテントを見て
+          プライバシー方針画面を表示する。
+        -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+</manifest>

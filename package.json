@@ -1,0 +1,18 @@
+{
+  "name": "healthtool",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ウェアラブル健康データの集約と LLM による評価",
+  "workspaces": [
+    "packages/schema"
+  ],
+  "scripts": {
+    "gen:types": "npm run gen --workspace @healthtool/schema",
+    "build:schema": "npm run build --workspace @healthtool/schema",
+    "emulators": "firebase emulators:start --only auth,firestore,functions",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

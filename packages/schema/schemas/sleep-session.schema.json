@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://healthtool.app/schemas/sleep-session.schema.json",
+  "title": "SleepSession",
+  "description": "users/{uid}/sleepSessions/{id} — 1回の睡眠セッション。ドキュメント ID は Health Connect の metadata.id をそのまま使い、再同期時に自然に冪等となる。",
+  "type": "object",
+  "required": ["schemaVersion", "id", "date", "tz", "startAt", "endAt", "stages", "source"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "id": {
+      "type": "string",
+      "description": "Health Connect の metadata.id。"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "起床日（ローカル暦日）。daily ドキュメントとの紐付けキー。"
+    },
+    "tz": { "type": "string" },
+    "startAt": { "type": "string", "format": "date-time" },
+    "endAt": { "type": "string", "format": "date-time" },
+    "inBedMin": { "type": ["number", "null"], "minimum": 0 },
+    "stages": {
+      "type": "array",
+      "description": "睡眠ステージの時系列。デバイスがステージを出さない場合は unknown 1区間だけになる。",
+      "items": {
+        "type": "object",
+        "required": ["stage", "startAt", "endAt"],
+        "additionalProperties": false,
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": ["awake", "light", "deep", "rem", "outOfBed", "unknown"]
+          },
+          "startAt": { "type": "string", "format": "date-time" },
+          "endAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "description": "書き込み元アプリのパッケージ名。"
+    },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}
