@@ -23,6 +23,10 @@ app/ios/Pods/
 app/ios/Runner/GoogleService-Info.plist
 *.iml
 
+# Cloudflare
+.wrangler/
+mcp/.dev.vars
+
 # Firebase
 .firebase/
 firebase-debug.log*

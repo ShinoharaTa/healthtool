@@ -1,0 +1,30 @@
+{
+  "name": "@healthtool/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "healthtool のリモート MCP サーバー (Cloudflare Workers)",
+  "notes": {
+    "@modelcontextprotocol/sdk": "agents が固定している版と完全一致させる。ずれると SDK が二重に入り、McpServer が別の型として扱われてビルドが通らない。"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^0.0.11",
+    "@healthtool/analytics": "*",
+    "@healthtool/schema": "*",
+    "@modelcontextprotocol/sdk": "1.25.2",
+    "agents": "^0.3.10",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260101.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.42.0"
+  }
+}

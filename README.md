@@ -8,7 +8,10 @@ LLM (Gemini) に第三者視点で評価させるツール。
 - **Xiaomi には公開 API が無い。** Mi Fitness / Zepp Life はサーバー API を出していないため、
   正攻法の取得経路は Android の **Health Connect** のみ。非公式 Huami API は利用規約違反かつ壊れやすいので使わない。
 - **Fitbit Web API は 2026年9月に停止する。** 後日 Fitbit を足す場合は Google Health API v4 を使う。
-- 結果として「Flutter が端末から吸い上げ → Firestore → Cloud Functions が集計と LLM 評価 → Next.js で閲覧」になる。
+- 結果として「Flutter が端末から吸い上げ → Firestore → リモート MCP サーバー → Claude が評価」になる。
+
+評価は LLM を組み込んだ定型レポートではなく、**Claude から引く pull 型**にしてある。
+固定プロンプトの週次レポートでは追加質問ができず、健康データの探索はまさにそこが要るため。
 
 ```
 [Xiaomi Smart Band] --BLE--> [Mi Fitness] --> [Health Connect]
@@ -17,10 +20,12 @@ LLM (Gemini) に第三者視点で評価させるツール。
                                                     │ 端末側で日次集約
                                                     ▼
                                            [Cloud Firestore]
-                                              ▲          │
-              [Next.js ダッシュボード] ───────┘          ▼
-                                                 [Cloud Functions v2]
-                                                  集計 / Gemini 評価 / 週次レポート
+                                                    │
+                                    [Cloudflare Workers: MCP サーバー]
+                                       OAuth (Google 委譲 + 許可リスト)
+                                       派生統計を計算して返す
+                                                    │
+                                    [Claude — Web / モバイル / Code]
 ```
 
 ## ディレクトリ
@@ -28,9 +33,9 @@ LLM (Gemini) に第三者視点で評価させるツール。
 | パス | 中身 |
 |---|---|
 | `packages/schema/` | **正準スキーマ。** JSON Schema が唯一の正で、TS 型と Dart クラスをここから生成する |
+| `packages/analytics/` | 派生統計。移動平均・就寝リズム・遅れ相関・欠損率。純粋関数のみ |
 | `app/` | Flutter Android アプリ。Health Connect からの取得と同期 |
-| `functions/` | Cloud Functions v2 (TypeScript)。派生統計と Gemini 評価 |
-| `web/` | Next.js ダッシュボード |
+| `mcp/` | リモート MCP サーバー (Cloudflare Workers)。Claude からの参照口 |
 
 ## スキーマと型生成
 
@@ -56,12 +61,17 @@ cd app && flutter pub get
 ```
 
 Firebase プロジェクトの紐付けはまだ行っていない。`docs/setup-firebase.md` を参照。
+MCP サーバーのデプロイ手順は `docs/setup-mcp.md`。
 
 ## 開発
 
 ```bash
-npm run emulators            # Auth + Firestore + Functions のエミュレータ
+npm test                     # 全ワークスペースのテスト
+npm run typecheck
+npm run emulators            # Auth + Firestore のエミュレータ
+cd app && flutter test       # 日次集約のテスト
 cd app && flutter run        # Android 実機またはエミュレータ
+cd mcp && npx wrangler dev   # MCP サーバーをローカル起動
 ```
 
 ## 注意

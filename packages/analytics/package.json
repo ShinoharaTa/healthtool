@@ -1,0 +1,20 @@
+{
+  "name": "@healthtool/analytics",
+  "version": "0.1.0",
+  "private": true,
+  "description": "日次サマリーから派生統計を計算する純粋関数群",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@healthtool/schema": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "healthtool-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "observability": {
+    "enabled": true
+  },
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "HEALTH_MCP",
+        "class_name": "HealthMcp"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["HealthMcp"]
+    }
+  ],
+
+  // OAuth のクライアント登録・グラント・トークンの保管先。
+  // `wrangler kv namespace create OAUTH_KV` で作って id を差し替える。
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      "id": "PLACEHOLDER_KV_NAMESPACE_ID"
+    }
+  ]
+
+  // 以下は秘密情報なので wrangler secret put で設定する。ここには書かない。
+  //   GOOGLE_CLIENT_ID
+  //   GOOGLE_CLIENT_SECRET
+  //   FIREBASE_SERVICE_ACCOUNT
+  //   ALLOWED_EMAILS
+}

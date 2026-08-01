@@ -4,12 +4,15 @@
   "private": true,
   "description": "ウェアラブル健康データの集約と LLM による評価",
   "workspaces": [
-    "packages/schema"
+    "packages/schema",
+    "packages/analytics",
+    "mcp"
   ],
   "scripts": {
     "gen:types": "npm run gen --workspace @healthtool/schema",
     "build:schema": "npm run build --workspace @healthtool/schema",
-    "emulators": "firebase emulators:start --only auth,firestore,functions",
+    "emulators": "firebase emulators:start --only auth,firestore",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },
   "engines": {
