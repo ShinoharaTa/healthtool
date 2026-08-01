@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'auth/auth_service.dart';
 import 'core/app_time.dart';
 import 'health/health_repository.dart';
+import 'ui/chart_preview_screen.dart';
 import 'ui/home_screen.dart';
 import 'ui/probe_screen.dart';
 import 'ui/sign_in_screen.dart';
@@ -152,6 +153,16 @@ class _LocalOnlyHome extends StatelessWidget {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => ProbeScreen(health: scope.health),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            icon: const Icon(Icons.show_chart),
+            label: const Text('グラフの見た目を確認する'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ChartPreviewScreen(time: scope.time),
               ),
             ),
           ),

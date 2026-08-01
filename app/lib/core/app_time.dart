@@ -81,6 +81,13 @@ class AppTime {
   /// このタイムゾーンでのローカル時刻に変換する。
   tz.TZDateTime toLocal(DateTime instant) => tz.TZDateTime.from(instant, location);
 
+  /// その時刻が、このタイムゾーンでの「その日の何分目」か (0-1439)。
+  /// 就寝・起床時刻をグラフに置くために使う。
+  int minutesOfDay(DateTime instant) {
+    final local = toLocal(instant);
+    return local.hour * 60 + local.minute;
+  }
+
   /// yyyy-MM-dd 形式に整形する。intl に依存せず、ゼロ埋めを明示する。
   static String formatDayKey(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-'

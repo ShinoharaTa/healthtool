@@ -1,9 +1,11 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-/// 直近の推移を出す小さな折れ線。
+import 'chart_palette.dart';
+
+/// 1 指標の推移を出す折れ線。
 ///
-/// 欠損日は線を切って表示する。0 として描くと「その日は歩かなかった」と
+/// 欠測日は線を切って表示する。0 として描くと「その日は歩かなかった」と
 /// 「バンドを着けていなかった」の区別がつかなくなり、判断を誤らせる。
 class TrendChart extends StatelessWidget {
   const TrendChart({
@@ -11,36 +13,34 @@ class TrendChart extends StatelessWidget {
     required this.title,
     required this.unit,
     required this.values,
+    this.digits = 0,
   });
 
   final String title;
   final String unit;
 
-  /// (日付キー, 値)。値が null の日は欠損として扱う。
+  /// (日付キー, 値)。値が null の日は欠測として扱う。
   final List<(String, double?)> values;
+  final int digits;
 
   @override
   Widget build(BuildContext context) {
+    final palette = ChartPalette.of(context);
     final theme = Theme.of(context);
     final present = values.where((v) => v.$2 != null).toList();
+    final missing = values.length - present.length;
 
     if (present.isEmpty) {
-      return _frame(
-        context,
+      return ChartCard(
+        title: title,
         child: SizedBox(
           height: 80,
           child: Center(
             child: Text('データなし', style: theme.textTheme.bodySmall),
           ),
         ),
-        latest: null,
       );
     }
-
-    final spots = <FlSpot>[
-      for (var i = 0; i < values.length; i++)
-        if (values[i].$2 case final v?) FlSpot(i.toDouble(), v) else FlSpot.nullSpot,
-    ];
 
     final nums = present.map((v) => v.$2!).toList();
     final minY = nums.reduce((a, b) => a < b ? a : b);
@@ -48,11 +48,13 @@ class TrendChart extends StatelessWidget {
     // 値が一定でも線が潰れないように余白を確保する。
     final pad = (maxY - minY) == 0 ? (maxY.abs() * 0.1 + 1) : (maxY - minY) * 0.15;
 
-    return _frame(
-      context,
-      latest: present.last.$2,
+    return ChartCard(
+      title: title,
+      // 系列が 1 本なので凡例は置かない。見出しがその系列の名前になっている。
+      trailing: '${_fmt(present.last.$2!)}$unit',
+      footnote: missing > 0 ? '欠測 $missing 日' : null,
       child: SizedBox(
-        height: 120,
+        height: 110,
         child: LineChart(
           LineChartData(
             minY: minY - pad,
@@ -65,8 +67,7 @@ class TrendChart extends StatelessWidget {
                 getTooltipItems: (touched) => [
                   for (final t in touched)
                     LineTooltipItem(
-                      '${values[t.x.toInt()].$1}\n'
-                      '${_format(t.y)} $unit',
+                      '${values[t.x.toInt()].$1}\n${_fmt(t.y)}$unit',
                       theme.textTheme.bodySmall ?? const TextStyle(),
                     ),
                 ],
@@ -74,14 +75,20 @@ class TrendChart extends StatelessWidget {
             ),
             lineBarsData: [
               LineChartBarData(
-                spots: spots,
+                spots: [
+                  for (var i = 0; i < values.length; i++)
+                    if (values[i].$2 case final v?)
+                      FlSpot(i.toDouble(), v)
+                    else
+                      FlSpot.nullSpot,
+                ],
                 isCurved: false,
                 barWidth: 2,
-                color: theme.colorScheme.primary,
+                color: palette.slot(0),
                 dotData: FlDotData(show: present.length <= 14),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                  color: palette.slot(0).withValues(alpha: 0.12),
                 ),
               ),
             ],
@@ -91,39 +98,5 @@ class TrendChart extends StatelessWidget {
     );
   }
 
-  Widget _frame(BuildContext context, {required Widget child, double? latest}) {
-    final theme = Theme.of(context);
-    final missing = values.where((v) => v.$2 == null).length;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(title, style: theme.textTheme.titleSmall),
-                if (latest != null)
-                  Text('${_format(latest)} $unit',
-                      style: theme.textTheme.titleMedium),
-              ],
-            ),
-            const SizedBox(height: 8),
-            child,
-            if (missing > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text('欠測 $missing 日', style: theme.textTheme.bodySmall),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static String _format(double v) =>
-      v >= 100 ? v.round().toString() : v.toStringAsFixed(1);
+  String _fmt(double v) => v.toStringAsFixed(digits);
 }
