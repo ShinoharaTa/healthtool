@@ -111,7 +111,7 @@ jobs:
           channel: stable
           cache: true
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
 
       # Health Connect まわりのマニフェスト設定は静的解析では検証できない。
       # 権限宣言や activity-alias を壊すとマージ後に初めて気付くことになるので、
