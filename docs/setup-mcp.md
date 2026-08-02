@@ -65,10 +65,34 @@ npx wrangler secret put ALLOWED_EMAILS             # カンマ区切り
 
 ## 5. デプロイ
 
+手元から一度出す場合:
+
 ```bash
 cd mcp
 npx wrangler deploy
 ```
+
+### Cloudflare 側の Git 連携 (Workers Builds) を使う場合
+
+このリポジトリは npm workspaces で、`mcp` は `@healthtool/schema` と
+`@healthtool/analytics` のビルド済み `dist` を参照する。
+そのため **ビルドはリポジトリのルートで走らせる必要がある**。
+ルートディレクトリを `mcp` にすると、依存パッケージが解決できず失敗する。
+
+Workers Builds の設定:
+
+| 項目 | 値 |
+|---|---|
+| ルートディレクトリ | `/`（リポジトリのルート） |
+| ビルドコマンド | `npm run build` |
+| デプロイコマンド | `npx wrangler deploy --config mcp/wrangler.jsonc` |
+
+`npm run build` はスキーマから TypeScript 型を生成してから
+`@healthtool/schema` と `@healthtool/analytics` をビルドする。
+生成コードはリポジトリに含めていないので、この手順を飛ばすと型が見つからない。
+
+secret は Workers Builds ではなく Worker 本体に設定する（手順 4 のまま）。
+ビルド環境の環境変数とは別物なので、そちらに入れても実行時には読めない。
 
 ## 6. Claude から接続する
 

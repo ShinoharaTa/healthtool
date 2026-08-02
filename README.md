@@ -90,8 +90,10 @@ cd mcp && npx wrangler dev   # MCP サーバーをローカル起動
 静的解析では気付けないため入れてある。これらが欠けると Health Connect から
 データが一切読めなくなり、実機に入れるまで分からない。
 
-MCP サーバーのデプロイ (`deploy-mcp.yml`) は手動実行のみ。
-`CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` をリポジトリの secret に登録して使う。
+CI に secret は要らない。テストは Firebase にも Cloudflare にも接続しない。
+
+MCP サーバーのデプロイは Cloudflare 側の Git 連携 (Workers Builds) で行うため、
+このリポジトリにはデプロイ用のワークフローを置いていない。設定値は `docs/setup-mcp.md`。
 
 ## 注意
 
