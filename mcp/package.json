@@ -19,7 +19,7 @@
     "@healthtool/schema": "*",
     "@modelcontextprotocol/sdk": "1.25.2",
     "agents": "^0.3.10",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260101.0",
