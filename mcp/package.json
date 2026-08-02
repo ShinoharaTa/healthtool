@@ -18,7 +18,7 @@
     "@healthtool/analytics": "*",
     "@healthtool/schema": "*",
     "@modelcontextprotocol/sdk": "1.25.2",
-    "agents": "^0.3.10",
+    "agents": "^0.20.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
