@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 同じブランチに続けて push したら古い実行は打ち切る。
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # ローカルと同じ版に固定する。Flutter の版が動くと analyze の指摘が変わり、
+  # 手元では通るのに CI で落ちる、が起きる。
+  FLUTTER_VERSION: '3.44.8'
+  NODE_VERSION: '22'
+
+jobs:
+  node:
+    name: TypeScript (schema / analytics / mcp)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # 型は JSON Schema から生成する。生成物は追跡していないので必ず作る。
+      - name: 型を生成してビルド
+        run: npm run build
+
+      - name: テスト
+        run: npm test
+
+      - name: 型検査
+        run: npm run typecheck
+
+      # スキーマを直して生成を忘れた状態がマージされないようにする。
+      # 生成物は .gitignore 済みなので差分は出ないはずだが、
+      # 生成そのものが失敗しないことをここで担保する。
+      - name: Dart モデルの生成も通ることを確認
+        run: npm run gen:types
+
+  flutter:
+    name: Flutter (analyze / test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # Dart のモデルはスキーマから生成する。これが無いと解析が通らない。
+      - name: Dart モデルを生成
+        run: npm run gen:types
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: 依存を取得
+        working-directory: app
+        run: flutter pub get
+
+      - name: 整形の確認
+        working-directory: app
+        # 生成物は整形の対象外。
+        run: dart format --output=none --set-exit-if-changed $(find lib test -name '*.dart' -not -path '*/generated/*')
+
+      - name: 静的解析
+        working-directory: app
+        run: flutter analyze --fatal-infos
+
+      - name: テスト
+        working-directory: app
+        run: flutter test
+
+  android:
+    name: Android ビルド
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm run gen:types
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      # Health Connect まわりのマニフェスト設定は静的解析では検証できない。
+      # 権限宣言や activity-alias を壊すとマージ後に初めて気付くことになるので、
+      # 実際にビルドしてマニフェストのマージが通ることを確認する。
+      - name: デバッグ APK をビルド
+        working-directory: app
+        run: flutter build apk --debug
+
+      - name: Health Connect の設定がマニフェストに残っているか確認
+        working-directory: app
+        run: |
+          MANIFEST=$(find build/app/intermediates -name AndroidManifest.xml -path '*merged_manifest*' | head -1)
+          echo "確認対象: $MANIFEST"
+          for needle in \
+            'android.permission.health.READ_STEPS' \
+            'android.permission.health.READ_SLEEP' \
+            'android.permission.health.READ_HEART_RATE' \
+            'READ_HEALTH_DATA_HISTORY' \
+            'READ_HEALTH_DATA_IN_BACKGROUND' \
+            'com.google.android.apps.healthdata' \
+            'ACTION_SHOW_PERMISSIONS_RATIONALE' \
+            'ViewPermissionUsageActivity' \
+            'minSdkVersion="26"'
+          do
+            if ! grep -q "$needle" "$MANIFEST"; then
+              echo "::error::マージ後のマニフェストに $needle がありません。Health Connect が読めなくなります。"
+              exit 1
+            fi
+          done
+          echo "Health Connect の設定はすべて残っています。"

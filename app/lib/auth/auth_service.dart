@@ -9,7 +9,8 @@ class AuthFailure implements Exception {
   final Object? cause;
 
   @override
-  String toString() => 'AuthFailure: $message${cause == null ? '' : ' ($cause)'}';
+  String toString() =>
+      'AuthFailure: $message${cause == null ? '' : ' ($cause)'}';
 }
 
 /// Firebase Auth と Google サインインの組み合わせ。
@@ -58,7 +59,8 @@ class AuthService {
       if (idToken == null) {
         throw const AuthFailure(
           'Google から ID トークンを取得できませんでした',
-          cause: 'serverClientId が未設定か、SHA-1 証明書フィンガープリントが Firebase に登録されていない可能性があります',
+          cause:
+              'serverClientId が未設定か、SHA-1 証明書フィンガープリントが Firebase に登録されていない可能性があります',
         );
       }
 

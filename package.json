@@ -11,6 +11,7 @@
   "scripts": {
     "gen:types": "npm run gen --workspace @healthtool/schema",
     "build:schema": "npm run build --workspace @healthtool/schema",
+    "build": "npm run build --workspace @healthtool/schema && npm run build --workspace @healthtool/analytics",
     "emulators": "firebase emulators:start --only auth,firestore",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"

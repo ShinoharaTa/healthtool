@@ -24,9 +24,11 @@ Future<void> main() async {
     debugPrint('Firebase が未設定のためローカルモードで起動します: $e');
   }
 
-  runApp(HealthToolApp(
-    time: time,
-    firebaseReady: firebaseReady,
-    firebaseError: firebaseError,
-  ));
+  runApp(
+    HealthToolApp(
+      time: time,
+      firebaseReady: firebaseReady,
+      firebaseError: firebaseError,
+    ),
+  );
 }

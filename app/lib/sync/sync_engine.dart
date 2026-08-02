@@ -91,9 +91,13 @@ class SyncEngine extends ChangeNotifier {
   Future<void> restore() async {
     final prefs = await SharedPreferences.getInstance();
     final ms = prefs.getInt(_prefsLastSync);
-    _setStatus(SyncIdle(
-      lastSyncedAt: ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms),
-    ));
+    _setStatus(
+      SyncIdle(
+        lastSyncedAt: ms == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(ms),
+      ),
+    );
   }
 
   /// 初回バックフィルが済んでいなければ [backfillDays] 日分、
@@ -108,9 +112,13 @@ class SyncEngine extends ChangeNotifier {
         : backfillDays;
 
     try {
-      _setStatus(SyncRunning(
-        message: backfilled ? '直近 $windowDays 日分を取得中' : '過去 $windowDays 日分を初回取得中',
-      ));
+      _setStatus(
+        SyncRunning(
+          message: backfilled
+              ? '直近 $windowDays 日分を取得中'
+              : '過去 $windowDays 日分を初回取得中',
+        ),
+      );
 
       final days = time.lastDays(windowDays);
       final start = time.startOfDay(days.first);
@@ -125,24 +133,33 @@ class SyncEngine extends ChangeNotifier {
 
       _setStatus(SyncRunning(message: '${points.length} 件を集計中', progress: 0.5));
 
-      final bundles = DailyAggregator(time: time).aggregate(points: points, days: days);
+      final bundles = DailyAggregator(
+        time: time,
+      ).aggregate(points: points, days: days);
 
       if (bundles.isEmpty) {
         // データが 1 件も無いのは、権限が実は下りていないか、
         // Mi Fitness が Health Connect に書いていないかのどちらか。
         // 空振りを成功と report すると原因追及ができなくなるので失敗として扱う。
-        _setStatus(const SyncFailed(
-          'Health Connect からデータを取得できませんでした',
-          detail: 'Mi Fitness の Health Connect 連携が有効か、権限画面で読み取りが許可されているか確認してください。',
-        ));
+        _setStatus(
+          const SyncFailed(
+            'Health Connect からデータを取得できませんでした',
+            detail:
+                'Mi Fitness の Health Connect 連携が有効か、権限画面で読み取りが許可されているか確認してください。',
+          ),
+        );
         return null;
       }
 
-      _setStatus(SyncRunning(message: '${bundles.length} 日分を保存中', progress: 0.8));
+      _setStatus(
+        SyncRunning(message: '${bundles.length} 日分を保存中', progress: 0.8),
+      );
 
       final written = await firestore.writeBundles(bundles);
       await firestore.updateSyncState(
-        grantedTypes: HealthTypeCatalog.androidTypes.map((t) => t.name).toList(),
+        grantedTypes: HealthTypeCatalog.androidTypes
+            .map((t) => t.name)
+            .toList(),
         fullBackfill: !backfilled,
       );
 

@@ -97,7 +97,9 @@ class _AuthGate extends StatelessWidget {
       stream: auth.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         final user = snapshot.data;
         if (user == null) return SignInScreen(auth: auth);
@@ -140,7 +142,10 @@ class _LocalOnlyHome extends StatelessWidget {
                   ),
                   if (error != null) ...[
                     const SizedBox(height: 8),
-                    Text('$error', style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      '$error',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ],
               ),

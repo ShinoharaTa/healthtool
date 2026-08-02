@@ -33,7 +33,9 @@ class _ChartPreviewScreenState extends State<ChartPreviewScreen> {
   Widget build(BuildContext context) {
     // 合成データも実データと同じく欠測日を含む。日付軸を張り直してから渡す。
     final all = denseSlots(_all, widget.time);
-    final days = all.skip((all.length - _period.days).clamp(0, all.length)).toList();
+    final days = all
+        .skip((all.length - _period.days).clamp(0, all.length))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('グラフのプレビュー（合成データ）')),
@@ -52,7 +54,8 @@ class _ChartPreviewScreenState extends State<ChartPreviewScreen> {
           const SizedBox(height: 12),
           SegmentedButton<Period>(
             segments: [
-              for (final p in Period.values) ButtonSegment(value: p, label: Text(p.label)),
+              for (final p in Period.values)
+                ButtonSegment(value: p, label: Text(p.label)),
             ],
             selected: {_period},
             showSelectedIcon: false,
@@ -82,14 +85,19 @@ class _ChartPreviewScreenState extends State<ChartPreviewScreen> {
           TrendChart(
             title: '歩数',
             unit: '歩',
-            values: [for (final d in days) (d.date, d.summary?.activity?.steps?.toDouble())],
+            values: [
+              for (final d in days)
+                (d.date, d.summary?.activity?.steps?.toDouble()),
+            ],
           ),
           const SizedBox(height: 12),
           TrendChart(
             title: '推定装着時間',
             unit: '時間',
             digits: 1,
-            values: [for (final d in days) (d.date, d.summary?.coverage.wornHours)],
+            values: [
+              for (final d in days) (d.date, d.summary?.coverage.wornHours),
+            ],
           ),
         ],
       ),
@@ -118,7 +126,9 @@ List<m.DailySummary> _synthesize(AppTime time, int days) {
     final bedBase = 23 * 60 + (isWeekend ? 60 : 0) + rnd.nextInt(90) - 20;
     final sleepMin = 330 + rnd.nextInt(150) + (isWeekend ? 30 : 0);
     final bedAt = start.subtract(Duration(minutes: 1440 - bedBase));
-    final wakeAt = bedAt.add(Duration(minutes: sleepMin + 20 + rnd.nextInt(40)));
+    final wakeAt = bedAt.add(
+      Duration(minutes: sleepMin + 20 + rnd.nextInt(40)),
+    );
 
     final deep = 55 + rnd.nextInt(50);
     final rem = 60 + rnd.nextInt(55);
@@ -129,47 +139,53 @@ List<m.DailySummary> _synthesize(AppTime time, int days) {
     // 睡眠が短い日は安静時心拍が上がる、という関係を薄く入れておく。
     final resting = 62 - (sleepMin - 400) * 0.012 + rnd.nextDouble() * 3;
     final steps = (isWeekend ? 3500 : 7500) + rnd.nextInt(6000);
-    final worn = rnd.nextDouble() < 0.1 ? 6 + rnd.nextDouble() * 5 : 19 + rnd.nextDouble() * 4;
+    final worn = rnd.nextDouble() < 0.1
+        ? 6 + rnd.nextDouble() * 5
+        : 19 + rnd.nextDouble() * 4;
 
-    out.add(m.DailySummary(
-      schemaVersion: 1,
-      date: date,
-      tz: time.timeZoneName,
-      activity: m.Activity(
-        steps: steps,
-        activeKcal: steps * 0.04,
-        distanceM: steps * 0.7,
+    out.add(
+      m.DailySummary(
+        schemaVersion: 1,
+        date: date,
+        tz: time.timeZoneName,
+        activity: m.Activity(
+          steps: steps,
+          activeKcal: steps * 0.04,
+          distanceM: steps * 0.7,
+        ),
+        hr: m.Hr(
+          restingBpm: double.parse(resting.toStringAsFixed(1)),
+          avgBpm: resting + 14 + rnd.nextInt(8).toDouble(),
+          minBpm: resting - 6,
+          maxBpm: 110 + rnd.nextInt(40).toDouble(),
+          sampleCount: 280,
+        ),
+        sleep: m.Sleep(
+          sessionIds: ['synthetic-$date'],
+          startAt: bedAt,
+          endAt: wakeAt,
+          midSleepAt: bedAt.add(Duration(minutes: (sleepMin + awake) ~/ 2)),
+          inBedMin: inBed,
+          totalMin: sleepMin.toDouble(),
+          deepMin: deep.toDouble(),
+          lightMin: light.toDouble(),
+          remMin: rem.toDouble(),
+          awakeMin: awake.toDouble(),
+          unknownMin: 0,
+          efficiencyPct: double.parse(
+            (sleepMin / inBed * 100).toStringAsFixed(1),
+          ),
+        ),
+        sources: const ['com.mi.health'],
+        coverage: m.Coverage(
+          hrCoveredMin: worn * 60,
+          wornHours: double.parse(worn.toStringAsFixed(1)),
+          hasSleep: true,
+          hasSteps: true,
+        ),
+        updatedAt: DateTime.now(),
       ),
-      hr: m.Hr(
-        restingBpm: double.parse(resting.toStringAsFixed(1)),
-        avgBpm: resting + 14 + rnd.nextInt(8).toDouble(),
-        minBpm: resting - 6,
-        maxBpm: 110 + rnd.nextInt(40).toDouble(),
-        sampleCount: 280,
-      ),
-      sleep: m.Sleep(
-        sessionIds: ['synthetic-$date'],
-        startAt: bedAt,
-        endAt: wakeAt,
-        midSleepAt: bedAt.add(Duration(minutes: (sleepMin + awake) ~/ 2)),
-        inBedMin: inBed,
-        totalMin: sleepMin.toDouble(),
-        deepMin: deep.toDouble(),
-        lightMin: light.toDouble(),
-        remMin: rem.toDouble(),
-        awakeMin: awake.toDouble(),
-        unknownMin: 0,
-        efficiencyPct: double.parse((sleepMin / inBed * 100).toStringAsFixed(1)),
-      ),
-      sources: const ['com.mi.health'],
-      coverage: m.Coverage(
-        hrCoveredMin: worn * 60,
-        wornHours: double.parse(worn.toStringAsFixed(1)),
-        hasSleep: true,
-        hasSteps: true,
-      ),
-      updatedAt: DateTime.now(),
-    ));
+    );
   }
 
   return out;

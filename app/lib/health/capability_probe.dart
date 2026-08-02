@@ -49,7 +49,8 @@ class ProbeReport {
   List<ProbeResult> get available => results.where((r) => r.hasData).toList();
   List<ProbeResult> get missing =>
       results.where((r) => !r.hasData && r.error == null).toList();
-  List<ProbeResult> get failed => results.where((r) => r.error != null).toList();
+  List<ProbeResult> get failed =>
+      results.where((r) => r.error != null).toList();
 
   /// 調査結果を貼り付け可能なテキストにする。
   /// どの指標が取れたかを記録に残し、後続の実装判断に使う。
@@ -60,9 +61,11 @@ class ProbeReport {
       ..writeln()
       ..writeln('## 取得できた (${available.length})');
     for (final r in available) {
-      b.writeln('- ${r.label} (${r.type.name}): ${r.count} 件'
-          '${r.sample == null ? '' : ' / 例: ${r.sample}'}'
-          '${r.sources.isEmpty ? '' : ' / 提供元: ${r.sources.join(", ")}'}');
+      b.writeln(
+        '- ${r.label} (${r.type.name}): ${r.count} 件'
+        '${r.sample == null ? '' : ' / 例: ${r.sample}'}'
+        '${r.sources.isEmpty ? '' : ' / 提供元: ${r.sources.join(", ")}'}',
+      );
     }
     b
       ..writeln()
@@ -111,24 +114,31 @@ class CapabilityProbe {
       try {
         final points = await health.fetch(types: [type], start: from, end: to);
         points.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
-        results.add(ProbeResult(
-          type: type,
-          count: points.length,
-          earliest: points.isEmpty ? null : points.first.dateFrom,
-          latest: points.isEmpty ? null : points.last.dateTo,
-          sample: points.isEmpty ? null : _describe(points.last),
-          sources: points.map((p) => p.sourceId).where((s) => s.isNotEmpty).toSet(),
-        ));
+        results.add(
+          ProbeResult(
+            type: type,
+            count: points.length,
+            earliest: points.isEmpty ? null : points.first.dateFrom,
+            latest: points.isEmpty ? null : points.last.dateTo,
+            sample: points.isEmpty ? null : _describe(points.last),
+            sources: points
+                .map((p) => p.sourceId)
+                .where((s) => s.isNotEmpty)
+                .toSet(),
+          ),
+        );
       } catch (e) {
-        results.add(ProbeResult(
-          type: type,
-          count: 0,
-          earliest: null,
-          latest: null,
-          sample: null,
-          sources: const {},
-          error: e.toString(),
-        ));
+        results.add(
+          ProbeResult(
+            type: type,
+            count: 0,
+            earliest: null,
+            latest: null,
+            sample: null,
+            sources: const {},
+            error: e.toString(),
+          ),
+        );
       }
       onProgress?.call(i + 1, types.length);
     }

@@ -14,7 +14,11 @@ import 'day_slots.dart';
 /// 20 分しか違わないものが正反対に見える。18 時を原点にすれば
 /// 就寝は軸の下部、起床は上部にまとまり、ばらつきがそのまま縦の散らばりになる。
 class BedtimeScatterChart extends StatelessWidget {
-  const BedtimeScatterChart({super.key, required this.days, required this.time});
+  const BedtimeScatterChart({
+    super.key,
+    required this.days,
+    required this.time,
+  });
 
   /// 欠測日を null で埋めた並び。
   final List<DaySlot> days;
@@ -32,21 +36,20 @@ class BedtimeScatterChart extends StatelessWidget {
     for (var i = 0; i < days.length; i++) {
       final sleep = days[i].summary?.sleep;
       if (sleep?.startAt == null || sleep?.endAt == null) continue;
-      points.add(_Night(
-        x: i.toDouble(),
-        date: days[i].date,
-        bedMinutes: time.minutesOfDay(sleep!.startAt!),
-        wakeMinutes: time.minutesOfDay(sleep.endAt!),
-      ));
+      points.add(
+        _Night(
+          x: i.toDouble(),
+          date: days[i].date,
+          bedMinutes: time.minutesOfDay(sleep!.startAt!),
+          wakeMinutes: time.minutesOfDay(sleep.endAt!),
+        ),
+      );
     }
 
     if (points.isEmpty) {
       return const ChartCard(
         title: '就寝と起床の時刻',
-        child: SizedBox(
-          height: 80,
-          child: Center(child: Text('睡眠データがありません')),
-        ),
+        child: SizedBox(height: 80, child: Center(child: Text('睡眠データがありません'))),
       );
     }
 
@@ -63,8 +66,14 @@ class BedtimeScatterChart extends StatelessWidget {
       ...points.map((p) => p.wakeAxis),
     ];
     const padMinutes = 45.0;
-    final rawMin = (axisValues.reduce(math.min) - padMinutes).clamp(0.0, 1440.0);
-    final rawMax = (axisValues.reduce(math.max) + padMinutes).clamp(0.0, 1440.0);
+    final rawMin = (axisValues.reduce(math.min) - padMinutes).clamp(
+      0.0,
+      1440.0,
+    );
+    final rawMax = (axisValues.reduce(math.max) + padMinutes).clamp(
+      0.0,
+      1440.0,
+    );
     // 目盛りは 2 時間刻み。範囲が狭いときは 1 時間刻みに落とす。
     final tickInterval = (rawMax - rawMin) > 480 ? 120.0 : 60.0;
     // 上下端を目盛りの倍数に丸める。半端な位置で切ると、
@@ -74,11 +83,22 @@ class BedtimeScatterChart extends StatelessWidget {
 
     return ChartCard(
       title: '就寝と起床の時刻',
-      legend: ChartLegend(entries: [
-        ('就寝', palette.slot(0), _clock(_meanAxis(points.map((p) => p.bedAxis)))),
-        ('起床', palette.slot(1), _clock(_meanAxis(points.map((p) => p.wakeAxis)))),
-      ]),
-      footnote: 'ばらつき（標準偏差）: 就寝 ${bedSpread.round()}分 · 起床 ${wakeSpread.round()}分'
+      legend: ChartLegend(
+        entries: [
+          (
+            '就寝',
+            palette.slot(0),
+            _clock(_meanAxis(points.map((p) => p.bedAxis))),
+          ),
+          (
+            '起床',
+            palette.slot(1),
+            _clock(_meanAxis(points.map((p) => p.wakeAxis))),
+          ),
+        ],
+      ),
+      footnote:
+          'ばらつき（標準偏差）: 就寝 ${bedSpread.round()}分 · 起床 ${wakeSpread.round()}分'
           '${days.length - points.length > 0 ? ' · 欠測 ${days.length - points.length}日' : ''}',
       child: SizedBox(
         height: 180,
@@ -108,10 +128,14 @@ class BedtimeScatterChart extends StatelessWidget {
                   interval: (days.length - 1).clamp(1, 9999).toDouble(),
                   getTitlesWidget: (value, _) {
                     final i = value.round();
-                    if (i < 0 || i >= days.length) return const SizedBox.shrink();
+                    if (i < 0 || i >= days.length) {
+                      return const SizedBox.shrink();
+                    }
                     return Text(
                       days[i].date.substring(5),
-                      style: theme.textTheme.bodySmall?.copyWith(color: palette.muted),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: palette.muted,
+                      ),
                     );
                   },
                 ),
@@ -123,7 +147,9 @@ class BedtimeScatterChart extends StatelessWidget {
                   interval: tickInterval,
                   getTitlesWidget: (value, _) => Text(
                     _clock(value),
-                    style: theme.textTheme.bodySmall?.copyWith(color: palette.muted),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: palette.muted,
+                    ),
                   ),
                 ),
               ),
@@ -175,7 +201,8 @@ class BedtimeScatterChart extends StatelessWidget {
 
   /// 18時起点の軸の値を、時計表示に戻す。
   static String _clock(double axisMinutes) {
-    final actual = ((axisMinutes.round() + _originMinutes) % 1440 + 1440) % 1440;
+    final actual =
+        ((axisMinutes.round() + _originMinutes) % 1440 + 1440) % 1440;
     final h = actual ~/ 60;
     final m = actual % 60;
     return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
@@ -193,7 +220,8 @@ class BedtimeScatterChart extends StatelessWidget {
     if (xs.length < 2) return 0;
     final mean = xs.reduce((a, b) => a + b) / xs.length;
     final variance =
-        xs.map((v) => (v - mean) * (v - mean)).reduce((a, b) => a + b) / (xs.length - 1);
+        xs.map((v) => (v - mean) * (v - mean)).reduce((a, b) => a + b) /
+        (xs.length - 1);
     return variance <= 0 ? 0 : math.sqrt(variance);
   }
 }

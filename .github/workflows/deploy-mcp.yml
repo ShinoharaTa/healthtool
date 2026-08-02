@@ -1,0 +1,44 @@
+name: MCP サーバーをデプロイ
+
+# 自動デプロイはしない。健康データへの入口なので、
+# main に入ったから即座に本番が変わる、という状態は避ける。
+# 変更を確認したうえで手動で走らせる。
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-mcp
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Cloudflare Workers へデプロイ
+    runs-on: ubuntu-latest
+    # 承認を挟みたくなったら、リポジトリ設定でこの environment に
+    # required reviewers を付ける。ワークフロー側の変更は要らない。
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # mcp は @healthtool/schema と @healthtool/analytics の dist を参照する。
+      - name: 依存パッケージをビルド
+        run: npm run build
+
+      - name: 念のためテストと型検査
+        run: |
+          npm test
+          npm run typecheck
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: mcp
+          command: deploy

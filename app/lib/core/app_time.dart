@@ -66,7 +66,12 @@ class AppTime {
     final last = startOfDay(to);
     while (!cursor.isAfter(last)) {
       result.add(formatDayKey(cursor));
-      cursor = tz.TZDateTime(location, cursor.year, cursor.month, cursor.day + 1);
+      cursor = tz.TZDateTime(
+        location,
+        cursor.year,
+        cursor.month,
+        cursor.day + 1,
+      );
     }
     return result;
   }
@@ -74,12 +79,18 @@ class AppTime {
   /// 今日から遡って [days] 日分の暦日キー（今日を含む）。
   List<String> lastDays(int days) {
     final end = startOfDay(today());
-    final start = tz.TZDateTime(location, end.year, end.month, end.day - (days - 1));
+    final start = tz.TZDateTime(
+      location,
+      end.year,
+      end.month,
+      end.day - (days - 1),
+    );
     return daysBetween(formatDayKey(start), formatDayKey(end));
   }
 
   /// このタイムゾーンでのローカル時刻に変換する。
-  tz.TZDateTime toLocal(DateTime instant) => tz.TZDateTime.from(instant, location);
+  tz.TZDateTime toLocal(DateTime instant) =>
+      tz.TZDateTime.from(instant, location);
 
   /// その時刻が、このタイムゾーンでの「その日の何分目」か (0-1439)。
   /// 就寝・起床時刻をグラフに置くために使う。

@@ -84,10 +84,12 @@ class IndexedOverlayChart extends StatelessWidget {
 
     return ChartCard(
       title: title,
-      legend: ChartLegend(entries: [
-        (primary.label, palette.slot(0), '中央値 ${_fmt(base1, primary)}'),
-        (secondary.label, palette.slot(1), '中央値 ${_fmt(base2, secondary)}'),
-      ]),
+      legend: ChartLegend(
+        entries: [
+          (primary.label, palette.slot(0), '中央値 ${_fmt(base1, primary)}'),
+          (secondary.label, palette.slot(1), '中央値 ${_fmt(base2, secondary)}'),
+        ],
+      ),
       footnote: '各指標を自身の中央値に対する % で表示。100% がその指標の平常値。',
       child: SizedBox(
         height: 160,
@@ -117,7 +119,9 @@ class IndexedOverlayChart extends StatelessWidget {
                   interval: 25,
                   getTitlesWidget: (value, _) => Text(
                     '${value.round()}%',
-                    style: theme.textTheme.bodySmall?.copyWith(color: palette.muted),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: palette.muted,
+                    ),
                   ),
                 ),
               ),
@@ -152,10 +156,14 @@ class IndexedOverlayChart extends StatelessWidget {
     return '$date\n${series.label} ${_fmt(raw, series)}';
   }
 
-  static LineChartBarData _bar(List<double?> values, Color color) => LineChartBarData(
+  static LineChartBarData _bar(List<double?> values, Color color) =>
+      LineChartBarData(
         spots: [
           for (var i = 0; i < values.length; i++)
-            if (values[i] case final v?) FlSpot(i.toDouble(), v) else FlSpot.nullSpot,
+            if (values[i] case final v?)
+              FlSpot(i.toDouble(), v)
+            else
+              FlSpot.nullSpot,
         ],
         isCurved: false,
         barWidth: 2,
@@ -176,6 +184,7 @@ class IndexedOverlayChart extends StatelessWidget {
     return m == 0 ? null : m;
   }
 
-  static List<double?> _index(List<double?> values, double base) =>
-      [for (final v in values) v == null ? null : (v / base) * 100];
+  static List<double?> _index(List<double?> values, double base) => [
+    for (final v in values) v == null ? null : (v / base) * 100,
+  ];
 }

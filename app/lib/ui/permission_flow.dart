@@ -47,8 +47,8 @@ Future<bool> ensureHealthPermissions(
         context,
         '読み取りが許可されていません',
         'Health Connect の設定画面で、healthtool に対する読み取りを許可してください。\n\n'
-        '一度「許可しない」を選ぶとアプリからダイアログを出せなくなります。'
-        'その場合は 設定 → セキュリティとプライバシー → Health Connect → アプリの権限 から変更できます。',
+            '一度「許可しない」を選ぶとアプリからダイアログを出せなくなります。'
+            'その場合は 設定 → セキュリティとプライバシー → Health Connect → アプリの権限 から変更できます。',
       );
       return false;
     }

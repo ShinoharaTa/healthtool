@@ -35,9 +35,7 @@ class TrendChart extends StatelessWidget {
         title: title,
         child: SizedBox(
           height: 80,
-          child: Center(
-            child: Text('データなし', style: theme.textTheme.bodySmall),
-          ),
+          child: Center(child: Text('データなし', style: theme.textTheme.bodySmall)),
         ),
       );
     }
@@ -46,7 +44,9 @@ class TrendChart extends StatelessWidget {
     final minY = nums.reduce((a, b) => a < b ? a : b);
     final maxY = nums.reduce((a, b) => a > b ? a : b);
     // 値が一定でも線が潰れないように余白を確保する。
-    final pad = (maxY - minY) == 0 ? (maxY.abs() * 0.1 + 1) : (maxY - minY) * 0.15;
+    final pad = (maxY - minY) == 0
+        ? (maxY.abs() * 0.1 + 1)
+        : (maxY - minY) * 0.15;
 
     return ChartCard(
       title: title,

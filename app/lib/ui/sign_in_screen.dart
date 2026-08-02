@@ -44,11 +44,17 @@ class _SignInScreenState extends State<SignInScreen> {
               shrinkWrap: true,
               padding: const EdgeInsets.all(24),
               children: [
-                Icon(Icons.monitor_heart_outlined,
-                    size: 64, color: theme.colorScheme.primary),
+                Icon(
+                  Icons.monitor_heart_outlined,
+                  size: 64,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(height: 16),
-                Text('healthtool',
-                    textAlign: TextAlign.center, style: theme.textTheme.headlineSmall),
+                Text(
+                  'healthtool',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   'ウェアラブルの健康データを集めて、\n傾向を可視化し、第三者視点の評価を受け取ります。',
@@ -79,7 +85,8 @@ class _SignInScreenState extends State<SignInScreen> {
                 TextButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => ProbeScreen(health: AppScope.of(context).health),
+                      builder: (_) =>
+                          ProbeScreen(health: AppScope.of(context).health),
                     ),
                   ),
                   child: const Text('サインインせずに取得可能なデータを調べる'),

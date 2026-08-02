@@ -23,7 +23,9 @@ class SleepStageChart extends StatelessWidget {
     final palette = ChartPalette.of(context);
     final theme = Theme.of(context);
 
-    final buckets = days.length > _weeklyThreshold ? _weekly(days) : _daily(days);
+    final buckets = days.length > _weeklyThreshold
+        ? _weekly(days)
+        : _daily(days);
     final withSleep = buckets.where((b) => b.total > 0).toList();
 
     if (withSleep.isEmpty) {
@@ -96,12 +98,16 @@ class SleepStageChart extends StatelessWidget {
                   // 全部描くと日付が重なって読めない。
                   getTitlesWidget: (value, _) {
                     final i = value.round();
-                    if (i != 0 && i != buckets.length - 1) return const SizedBox.shrink();
+                    if (i != 0 && i != buckets.length - 1) {
+                      return const SizedBox.shrink();
+                    }
                     return Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         buckets[i].label,
-                        style: theme.textTheme.bodySmall?.copyWith(color: palette.muted),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: palette.muted,
+                        ),
                       ),
                     );
                   },
@@ -114,7 +120,9 @@ class SleepStageChart extends StatelessWidget {
                   interval: 120,
                   getTitlesWidget: (value, _) => Text(
                     '${(value / 60).round()}h',
-                    style: theme.textTheme.bodySmall?.copyWith(color: palette.muted),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: palette.muted,
+                    ),
                   ),
                 ),
               ),
@@ -143,9 +151,15 @@ class SleepStageChart extends StatelessWidget {
                       toY: buckets[i].total,
                       width: _barWidth(buckets.length),
                       // データの先端だけ丸める。積み上げの途中は角のまま。
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(4),
+                      ),
                       color: palette.gridline,
-                      rodStackItems: _stack(buckets[i], components, theme.cardColor),
+                      rodStackItems: _stack(
+                        buckets[i],
+                        components,
+                        theme.cardColor,
+                      ),
                     ),
                   ],
                 ),
@@ -167,12 +181,14 @@ class SleepStageChart extends StatelessWidget {
     for (final c in components) {
       final v = c.pick(b);
       if (v <= 0) continue;
-      items.add(BarChartRodStackItem(
-        from,
-        from + v,
-        c.color,
-        borderSide: BorderSide(color: surface, width: 1),
-      ));
+      items.add(
+        BarChartRodStackItem(
+          from,
+          from + v,
+          c.color,
+          borderSide: BorderSide(color: surface, width: 1),
+        ),
+      );
       from += v;
     }
     return items;
@@ -186,16 +202,16 @@ class SleepStageChart extends StatelessWidget {
   }
 
   static List<_Bucket> _daily(List<DaySlot> days) => [
-        for (final d in days)
-          _Bucket(
-            label: d.date.substring(5),
-            deep: d.summary?.sleep?.deepMin ?? 0,
-            light: d.summary?.sleep?.lightMin ?? 0,
-            rem: d.summary?.sleep?.remMin ?? 0,
-            unknown: d.summary?.sleep?.unknownMin ?? 0,
-            awake: d.summary?.sleep?.awakeMin ?? 0,
-          ),
-      ];
+    for (final d in days)
+      _Bucket(
+        label: d.date.substring(5),
+        deep: d.summary?.sleep?.deepMin ?? 0,
+        light: d.summary?.sleep?.lightMin ?? 0,
+        rem: d.summary?.sleep?.remMin ?? 0,
+        unknown: d.summary?.sleep?.unknownMin ?? 0,
+        awake: d.summary?.sleep?.awakeMin ?? 0,
+      ),
+  ];
 
   /// 7 日ずつの平均。長期表示で棒が潰れるのを避ける。
   static List<_Bucket> _weekly(List<DaySlot> days) {
@@ -204,19 +220,23 @@ class SleepStageChart extends StatelessWidget {
       final chunk = days.skip(i).take(7).toList();
       // 睡眠が記録された日だけで平均する。欠測日を 0 として混ぜると
       // 「その週はあまり眠っていない」ように見えてしまう。
-      final slept = chunk.where((d) => (d.summary?.sleep?.totalMin ?? 0) > 0).toList();
+      final slept = chunk
+          .where((d) => (d.summary?.sleep?.totalMin ?? 0) > 0)
+          .toList();
       if (slept.isEmpty) {
         out.add(_Bucket(label: chunk.first.date.substring(5)));
         continue;
       }
-      out.add(_Bucket(
-        label: '${chunk.first.date.substring(5)}〜',
-        deep: _mean(slept.map((d) => d.summary?.sleep?.deepMin ?? 0)),
-        light: _mean(slept.map((d) => d.summary?.sleep?.lightMin ?? 0)),
-        rem: _mean(slept.map((d) => d.summary?.sleep?.remMin ?? 0)),
-        unknown: _mean(slept.map((d) => d.summary?.sleep?.unknownMin ?? 0)),
-        awake: _mean(slept.map((d) => d.summary?.sleep?.awakeMin ?? 0)),
-      ));
+      out.add(
+        _Bucket(
+          label: '${chunk.first.date.substring(5)}〜',
+          deep: _mean(slept.map((d) => d.summary?.sleep?.deepMin ?? 0)),
+          light: _mean(slept.map((d) => d.summary?.sleep?.lightMin ?? 0)),
+          rem: _mean(slept.map((d) => d.summary?.sleep?.remMin ?? 0)),
+          unknown: _mean(slept.map((d) => d.summary?.sleep?.unknownMin ?? 0)),
+          awake: _mean(slept.map((d) => d.summary?.sleep?.awakeMin ?? 0)),
+        ),
+      );
     }
     return out;
   }
@@ -229,7 +249,8 @@ class SleepStageChart extends StatelessWidget {
   }
 
   /// 上端を 2 時間刻みの切りのいい値にする。
-  static double _niceCeil(double v) => v <= 0 ? 480 : ((v / 120).ceil() * 120).toDouble();
+  static double _niceCeil(double v) =>
+      v <= 0 ? 480 : ((v / 120).ceil() * 120).toDouble();
 
   static String _hm(double minutes) {
     final total = minutes.round();
@@ -272,9 +293,9 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-        height: 80,
-        child: Center(
-          child: Text(message, style: Theme.of(context).textTheme.bodySmall),
-        ),
-      );
+    height: 80,
+    child: Center(
+      child: Text(message, style: Theme.of(context).textTheme.bodySmall),
+    ),
+  );
 }

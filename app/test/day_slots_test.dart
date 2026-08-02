@@ -4,19 +4,19 @@ import 'package:healthtool/models/generated/generated.dart' as m;
 import 'package:healthtool/ui/charts/day_slots.dart';
 
 m.DailySummary day(String date, {int steps = 1000}) => m.DailySummary(
-      schemaVersion: 1,
-      date: date,
-      tz: 'Asia/Tokyo',
-      activity: m.Activity(steps: steps),
-      sources: const ['com.mi.health'],
-      coverage: m.Coverage(
-        hrCoveredMin: 1200,
-        wornHours: 20,
-        hasSleep: false,
-        hasSteps: true,
-      ),
-      updatedAt: DateTime.utc(2026, 8, 1),
-    );
+  schemaVersion: 1,
+  date: date,
+  tz: 'Asia/Tokyo',
+  activity: m.Activity(steps: steps),
+  sources: const ['com.mi.health'],
+  coverage: m.Coverage(
+    hrCoveredMin: 1200,
+    wornHours: 20,
+    hasSleep: false,
+    hasSteps: true,
+  ),
+  updatedAt: DateTime.utc(2026, 8, 1),
+);
 
 void main() {
   final time = AppTime.init('Asia/Tokyo');
@@ -25,10 +25,11 @@ void main() {
     // Firestore は計測が無かった日のドキュメントを持たない。
     // そのまま並べるとグラフ上で 07-02 と 07-05 が隣り合ってしまい、
     // 3 日空いていたことが消える。
-    final slots = denseSlots(
-      [day('2026-07-01'), day('2026-07-02'), day('2026-07-05')],
-      time,
-    );
+    final slots = denseSlots([
+      day('2026-07-01'),
+      day('2026-07-02'),
+      day('2026-07-05'),
+    ], time);
 
     expect(slots.map((s) => s.date), [
       '2026-07-01',
@@ -48,11 +49,16 @@ void main() {
   });
 
   test('入力の順序が乱れていても日付順に整える', () {
-    final slots = denseSlots(
-      [day('2026-07-03'), day('2026-07-01'), day('2026-07-02')],
-      time,
-    );
-    expect(slots.map((s) => s.date), ['2026-07-01', '2026-07-02', '2026-07-03']);
+    final slots = denseSlots([
+      day('2026-07-03'),
+      day('2026-07-01'),
+      day('2026-07-02'),
+    ], time);
+    expect(slots.map((s) => s.date), [
+      '2026-07-01',
+      '2026-07-02',
+      '2026-07-03',
+    ]);
     expect(slots.every((s) => s.hasData), isTrue);
   });
 

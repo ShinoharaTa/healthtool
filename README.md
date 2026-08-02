@@ -74,6 +74,25 @@ cd app && flutter run        # Android 実機またはエミュレータ
 cd mcp && npx wrangler dev   # MCP サーバーをローカル起動
 ```
 
+## CI
+
+`.github/workflows/ci.yml` が push と PR で走る。
+
+| ジョブ | 内容 |
+|---|---|
+| `node` | スキーマから型を生成 → ビルド → テスト → 型検査 |
+| `flutter` | Dart モデルを生成 → `dart format` の確認 → `flutter analyze --fatal-infos` → テスト |
+| `android` | デバッグ APK をビルドし、**マージ後のマニフェストに Health Connect の設定が残っているかを検証** |
+
+生成コードは追跡していないので、どのジョブも先に `npm run gen:types` を通す。
+
+`android` ジョブのマニフェスト検証は、権限宣言や `activity-alias` を消しても
+静的解析では気付けないため入れてある。これらが欠けると Health Connect から
+データが一切読めなくなり、実機に入れるまで分からない。
+
+MCP サーバーのデプロイ (`deploy-mcp.yml`) は手動実行のみ。
+`CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` をリポジトリの secret に登録して使う。
+
 ## 注意
 
 このツールは医療機器ではなく、出力は診断ではない。LLM のプロンプトにもその制約を明記してあり、

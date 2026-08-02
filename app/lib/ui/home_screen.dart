@@ -77,7 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final result = await _sync!.syncNow();
     if (!mounted || result == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${result.from}〜${result.to} の ${result.days} 日分を同期しました')),
+      SnackBar(
+        content: Text('${result.from}〜${result.to} の ${result.days} 日分を同期しました'),
+      ),
     );
   }
 
@@ -93,7 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.search),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => ProbeScreen(health: AppScope.of(context).health),
+                builder: (_) =>
+                    ProbeScreen(health: AppScope.of(context).health),
               ),
             ),
           ),
@@ -218,7 +221,8 @@ class _HomeScreenState extends State<HomeScreen> {
           title: '歩数',
           unit: '歩',
           values: [
-            for (final s in slots) (s.date, s.summary?.activity?.steps?.toDouble()),
+            for (final s in slots)
+              (s.date, s.summary?.activity?.steps?.toDouble()),
           ],
         ),
         const SizedBox(height: 12),
@@ -235,7 +239,9 @@ class _HomeScreenState extends State<HomeScreen> {
           title: '推定装着時間',
           unit: '時間',
           digits: 1,
-          values: [for (final s in slots) (s.date, s.summary?.coverage.wornHours)],
+          values: [
+            for (final s in slots) (s.date, s.summary?.coverage.wornHours),
+          ],
         ),
       ],
     );
@@ -245,64 +251,64 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     return switch (status) {
       SyncRunning(:final message, :final progress) => Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(message),
-                const SizedBox(height: 12),
-                LinearProgressIndicator(value: progress),
-              ],
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message),
+              const SizedBox(height: 12),
+              LinearProgressIndicator(value: progress),
+            ],
           ),
         ),
+      ),
       SyncFailed(:final message, :final detail) => Card(
-          color: theme.colorScheme.errorContainer,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(message, style: theme.textTheme.titleSmall),
-                if (detail != null) ...[
-                  const SizedBox(height: 8),
-                  Text('$detail', style: theme.textTheme.bodySmall),
-                ],
+        color: theme.colorScheme.errorContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message, style: theme.textTheme.titleSmall),
+              if (detail != null) ...[
+                const SizedBox(height: 8),
+                Text('$detail', style: theme.textTheme.bodySmall),
               ],
-            ),
+            ],
           ),
         ),
+      ),
       SyncIdle(:final lastSyncedAt, :final lastResult) => Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                lastSyncedAt == null
+                    ? 'まだ同期していません'
+                    : '最終同期: ${_formatTime(lastSyncedAt)}',
+                style: theme.textTheme.titleSmall,
+              ),
+              if (lastResult != null) ...[
+                const SizedBox(height: 8),
                 Text(
-                  lastSyncedAt == null
-                      ? 'まだ同期していません'
-                      : '最終同期: ${_formatTime(lastSyncedAt)}',
-                  style: theme.textTheme.titleSmall,
+                  '${lastResult.pointsFetched} 件のサンプルから ${lastResult.days} 日分を作成',
+                  style: theme.textTheme.bodySmall,
                 ),
-                if (lastResult != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    '${lastResult.pointsFetched} 件のサンプルから ${lastResult.days} 日分を作成',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
               ],
-            ),
+            ],
           ),
         ),
+      ),
     };
   }
 
   Widget _message(BuildContext context, String text) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
-        child: Center(child: Text(text, textAlign: TextAlign.center)),
-      );
+    padding: const EdgeInsets.symmetric(vertical: 32),
+    child: Center(child: Text(text, textAlign: TextAlign.center)),
+  );
 
   static String _formatTime(DateTime t) {
     final l = t.toLocal();

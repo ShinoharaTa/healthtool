@@ -10,7 +10,7 @@ import '../sync/daily_aggregator.dart';
 /// 修正された場合は上書きで追従する。
 class FirestoreRepository {
   FirestoreRepository({required this.uid, FirebaseFirestore? firestore})
-      : _db = firestore ?? FirebaseFirestore.instance;
+    : _db = firestore ?? FirebaseFirestore.instance;
 
   final String uid;
   final FirebaseFirestore _db;
@@ -19,7 +19,8 @@ class FirestoreRepository {
   static const _batchLimit = 400;
 
   DocumentReference<Map<String, dynamic>> get _userDoc => _db.doc('users/$uid');
-  CollectionReference<Map<String, dynamic>> get _dailyCol => _userDoc.collection('daily');
+  CollectionReference<Map<String, dynamic>> get _dailyCol =>
+      _userDoc.collection('daily');
 
   /// 初回サインイン時にユーザードキュメントを用意する。既存の設定は壊さない。
   Future<void> ensureUserDocument({
@@ -27,14 +28,8 @@ class FirestoreRepository {
     String? displayName,
   }) async {
     await _userDoc.set({
-      'profile': {
-        'displayName': ?displayName,
-        'timezone': timeZone,
-      },
-      'settings': {
-        'locale': 'ja',
-        'weeklyReport': true,
-      },
+      'profile': {'displayName': ?displayName, 'timezone': timeZone},
+      'settings': {'locale': 'ja', 'weeklyReport': true},
       'createdAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
@@ -73,19 +68,26 @@ class FirestoreRepository {
       if (bundle.hrBins.isNotEmpty) {
         // 5分ビンは 1 日 1 ドキュメントにまとめる。1 サンプル 1 ドキュメントにすると
         // 読み取り課金が 2 桁増えるうえ、グラフ描画で毎回 288 回読むことになる。
-        ops.add((b) => b.set(dailyRef.collection('intraday').doc('hr'), {
-              'date': bundle.date,
-              'binMinutes': kHrBinMinutes,
-              'samples': bundle.hrBins.map((e) => e.toJson()).toList(),
-              'updatedAt': bundle.summary.updatedAt.toIso8601String(),
-            }));
+        ops.add(
+          (b) => b.set(dailyRef.collection('intraday').doc('hr'), {
+            'date': bundle.date,
+            'binMinutes': kHrBinMinutes,
+            'samples': bundle.hrBins.map((e) => e.toJson()).toList(),
+            'updatedAt': bundle.summary.updatedAt.toIso8601String(),
+          }),
+        );
       }
 
       for (final s in bundle.sleepSessions) {
-        ops.add((b) => b.set(_userDoc.collection('sleepSessions').doc(s.id), s.toJson()));
+        ops.add(
+          (b) =>
+              b.set(_userDoc.collection('sleepSessions').doc(s.id), s.toJson()),
+        );
       }
       for (final w in bundle.workouts) {
-        ops.add((b) => b.set(_userDoc.collection('workouts').doc(w.id), w.toJson()));
+        ops.add(
+          (b) => b.set(_userDoc.collection('workouts').doc(w.id), w.toJson()),
+        );
       }
     }
 
@@ -105,15 +107,20 @@ class FirestoreRepository {
         .orderBy(FieldPath.documentId, descending: true)
         .limit(limit)
         .snapshots()
-        .map((snap) => snap.docs
-            .map((d) => m.DailySummary.fromJson(d.data()))
-            .toList()
-            .reversed
-            .toList());
+        .map(
+          (snap) => snap.docs
+              .map((d) => m.DailySummary.fromJson(d.data()))
+              .toList()
+              .reversed
+              .toList(),
+        );
   }
 
   /// すでに同期済みの日付。差分同期の判定に使う。
-  Future<Set<String>> syncedDates({required String from, required String to}) async {
+  Future<Set<String>> syncedDates({
+    required String from,
+    required String to,
+  }) async {
     final snap = await _dailyCol
         .orderBy(FieldPath.documentId)
         .startAt([from])

@@ -72,11 +72,13 @@ class _ProbeScreenState extends State<ProbeScreen> {
               tooltip: 'レポートをコピー',
               icon: const Icon(Icons.copy_all),
               onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: report.toReportText()));
+                await Clipboard.setData(
+                  ClipboardData(text: report.toReportText()),
+                );
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('レポートをコピーしました')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('レポートをコピーしました')));
                 }
               },
             ),
@@ -84,7 +86,8 @@ class _ProbeScreenState extends State<ProbeScreen> {
       ),
       body: Column(
         children: [
-          if (_running) LinearProgressIndicator(value: _total == 0 ? null : _done / _total),
+          if (_running)
+            LinearProgressIndicator(value: _total == 0 ? null : _done / _total),
           Expanded(
             child: report == null ? _intro(context) : _results(context, report),
           ),
@@ -147,8 +150,10 @@ class _ProbeScreenState extends State<ProbeScreen> {
                 Text('取得できた: ${report.available.length} 種類'),
                 Text('データ無し: ${report.missing.length} 種類'),
                 if (report.failed.isNotEmpty)
-                  Text('エラー: ${report.failed.length} 種類',
-                      style: TextStyle(color: theme.colorScheme.error)),
+                  Text(
+                    'エラー: ${report.failed.length} 種類',
+                    style: TextStyle(color: theme.colorScheme.error),
+                  ),
               ],
             ),
           ),
@@ -169,7 +174,10 @@ class _ProbeScreenState extends State<ProbeScreen> {
   Widget _row(BuildContext context, ProbeResult r) {
     final theme = Theme.of(context);
     final (icon, color) = switch (r) {
-      ProbeResult(error: != null) => (Icons.error_outline, theme.colorScheme.error),
+      ProbeResult(error: != null) => (
+        Icons.error_outline,
+        theme.colorScheme.error,
+      ),
       ProbeResult(hasData: true) => (Icons.check_circle, Colors.green),
       _ => (Icons.remove_circle_outline, theme.disabledColor),
     };
@@ -182,10 +190,10 @@ class _ProbeScreenState extends State<ProbeScreen> {
         r.error != null
             ? r.error!
             : r.hasData
-                ? '${r.count} 件'
+            ? '${r.count} 件'
                   '${r.sample == null ? '' : ' / 例: ${r.sample}'}'
                   '${r.sources.isEmpty ? '' : '\n提供元: ${r.sources.join(", ")}'}'
-                : 'データ無し',
+            : 'データ無し',
         style: theme.textTheme.bodySmall,
       ),
       isThreeLine: r.hasData && r.sources.isNotEmpty,

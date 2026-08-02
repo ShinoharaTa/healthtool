@@ -49,7 +49,14 @@ void main() {
     test('深夜をまたぐ歩数レコードは期間の中点が属する日に入る', () {
       // 23:50-00:10 の記録。中点は 00:00 なので翌日側。
       final out = run(
-        [point(HealthDataType.STEPS, from: '2026-07-30T23:50:00', to: '2026-07-31T00:10:00', value: 100)],
+        [
+          point(
+            HealthDataType.STEPS,
+            from: '2026-07-30T23:50:00',
+            to: '2026-07-31T00:10:00',
+            value: 100,
+          ),
+        ],
         ['2026-07-30', '2026-07-31'],
       );
       expect(out.map((b) => b.date), ['2026-07-31']);
@@ -59,8 +66,18 @@ void main() {
     test('要求していない日のデータは捨てる', () {
       final out = run(
         [
-          point(HealthDataType.STEPS, from: '2026-07-25T10:00:00', to: '2026-07-25T10:10:00', value: 500),
-          point(HealthDataType.STEPS, from: '2026-07-31T10:00:00', to: '2026-07-31T10:10:00', value: 300),
+          point(
+            HealthDataType.STEPS,
+            from: '2026-07-25T10:00:00',
+            to: '2026-07-25T10:10:00',
+            value: 500,
+          ),
+          point(
+            HealthDataType.STEPS,
+            from: '2026-07-31T10:00:00',
+            to: '2026-07-31T10:10:00',
+            value: 300,
+          ),
         ],
         ['2026-07-31'],
       );
@@ -73,11 +90,27 @@ void main() {
     test('5分ビンに畳み、平均・最小・最大・装着時間を出す', () {
       final points = [
         // 10:00-10:04 の 3 サンプル → 同じビンにまとまる
-        point(HealthDataType.HEART_RATE, from: '2026-07-31T10:00:00', value: 60),
-        point(HealthDataType.HEART_RATE, from: '2026-07-31T10:02:00', value: 70),
-        point(HealthDataType.HEART_RATE, from: '2026-07-31T10:04:00', value: 80),
+        point(
+          HealthDataType.HEART_RATE,
+          from: '2026-07-31T10:00:00',
+          value: 60,
+        ),
+        point(
+          HealthDataType.HEART_RATE,
+          from: '2026-07-31T10:02:00',
+          value: 70,
+        ),
+        point(
+          HealthDataType.HEART_RATE,
+          from: '2026-07-31T10:04:00',
+          value: 80,
+        ),
         // 別のビン
-        point(HealthDataType.HEART_RATE, from: '2026-07-31T11:00:00', value: 100),
+        point(
+          HealthDataType.HEART_RATE,
+          from: '2026-07-31T11:00:00',
+          value: 100,
+        ),
       ];
       final b = run(points, ['2026-07-31']).single;
 
@@ -93,10 +126,21 @@ void main() {
     });
 
     test('安静時心拍はその日の平均を採る', () {
-      final b = run([
-        point(HealthDataType.RESTING_HEART_RATE, from: '2026-07-31T04:00:00', value: 54),
-        point(HealthDataType.RESTING_HEART_RATE, from: '2026-07-31T05:00:00', value: 58),
-      ], ['2026-07-31']).single;
+      final b = run(
+        [
+          point(
+            HealthDataType.RESTING_HEART_RATE,
+            from: '2026-07-31T04:00:00',
+            value: 54,
+          ),
+          point(
+            HealthDataType.RESTING_HEART_RATE,
+            from: '2026-07-31T05:00:00',
+            value: 58,
+          ),
+        ],
+        ['2026-07-31'],
+      ).single;
       expect(b.summary.hr?.restingBpm, 56);
     });
   });
@@ -104,17 +148,37 @@ void main() {
   group('睡眠', () {
     /// 前夜 23:00 就寝、翌 07:00 起床のセッションとステージ。
     List<HealthDataPoint> nightOf31() => [
-          point(HealthDataType.SLEEP_SESSION,
-              from: '2026-07-30T23:00:00', to: '2026-07-31T07:00:00', uuid: 'sess-1'),
-          point(HealthDataType.SLEEP_DEEP,
-              from: '2026-07-30T23:30:00', to: '2026-07-31T01:00:00', uuid: 'd1'),
-          point(HealthDataType.SLEEP_REM,
-              from: '2026-07-31T01:00:00', to: '2026-07-31T02:00:00', uuid: 'r1'),
-          point(HealthDataType.SLEEP_LIGHT,
-              from: '2026-07-31T02:00:00', to: '2026-07-31T06:30:00', uuid: 'l1'),
-          point(HealthDataType.SLEEP_AWAKE,
-              from: '2026-07-31T06:30:00', to: '2026-07-31T07:00:00', uuid: 'a1'),
-        ];
+      point(
+        HealthDataType.SLEEP_SESSION,
+        from: '2026-07-30T23:00:00',
+        to: '2026-07-31T07:00:00',
+        uuid: 'sess-1',
+      ),
+      point(
+        HealthDataType.SLEEP_DEEP,
+        from: '2026-07-30T23:30:00',
+        to: '2026-07-31T01:00:00',
+        uuid: 'd1',
+      ),
+      point(
+        HealthDataType.SLEEP_REM,
+        from: '2026-07-31T01:00:00',
+        to: '2026-07-31T02:00:00',
+        uuid: 'r1',
+      ),
+      point(
+        HealthDataType.SLEEP_LIGHT,
+        from: '2026-07-31T02:00:00',
+        to: '2026-07-31T06:30:00',
+        uuid: 'l1',
+      ),
+      point(
+        HealthDataType.SLEEP_AWAKE,
+        from: '2026-07-31T06:30:00',
+        to: '2026-07-31T07:00:00',
+        uuid: 'a1',
+      ),
+    ];
 
     test('起床日に割り当てられる（就寝日ではない）', () {
       final out = run(nightOf31(), ['2026-07-30', '2026-07-31']);
@@ -142,21 +206,37 @@ void main() {
     });
 
     test('セッションレコードが無くてもステージから睡眠区間を復元する', () {
-      final stagesOnly = nightOf31().where((p) => p.type != HealthDataType.SLEEP_SESSION).toList();
+      final stagesOnly = nightOf31()
+          .where((p) => p.type != HealthDataType.SLEEP_SESSION)
+          .toList();
       final b = run(stagesOnly, ['2026-07-31']).single;
 
       expect(b.sleepSessions.length, 1);
-      expect(b.sleepSessions.single.startAt.toUtc(), DateTime.utc(2026, 7, 30, 14, 30));
-      expect(b.sleepSessions.single.endAt.toUtc(), DateTime.utc(2026, 7, 30, 22));
+      expect(
+        b.sleepSessions.single.startAt.toUtc(),
+        DateTime.utc(2026, 7, 30, 14, 30),
+      );
+      expect(
+        b.sleepSessions.single.endAt.toUtc(),
+        DateTime.utc(2026, 7, 30, 22),
+      );
       expect(b.summary.sleep?.deepMin, 90);
     });
 
     test('60分以上空いたステージは別の睡眠として分ける（昼寝）', () {
       final points = [
-        point(HealthDataType.SLEEP_LIGHT,
-            from: '2026-07-31T01:00:00', to: '2026-07-31T05:00:00', uuid: 'night'),
-        point(HealthDataType.SLEEP_LIGHT,
-            from: '2026-07-31T14:00:00', to: '2026-07-31T15:00:00', uuid: 'nap'),
+        point(
+          HealthDataType.SLEEP_LIGHT,
+          from: '2026-07-31T01:00:00',
+          to: '2026-07-31T05:00:00',
+          uuid: 'night',
+        ),
+        point(
+          HealthDataType.SLEEP_LIGHT,
+          from: '2026-07-31T14:00:00',
+          to: '2026-07-31T15:00:00',
+          uuid: 'nap',
+        ),
       ];
       final b = run(points, ['2026-07-31']).single;
       expect(b.sleepSessions.length, 2);
@@ -164,10 +244,17 @@ void main() {
     });
 
     test('ステージを出さないデバイスでも unknown 区間として睡眠時間が残る', () {
-      final b = run([
-        point(HealthDataType.SLEEP_SESSION,
-            from: '2026-07-30T23:00:00', to: '2026-07-31T06:00:00', uuid: 's'),
-      ], ['2026-07-31']).single;
+      final b = run(
+        [
+          point(
+            HealthDataType.SLEEP_SESSION,
+            from: '2026-07-30T23:00:00',
+            to: '2026-07-31T06:00:00',
+            uuid: 's',
+          ),
+        ],
+        ['2026-07-31'],
+      ).single;
 
       expect(b.summary.sleep?.unknownMin, 420);
       expect(b.summary.sleep?.totalMin, 420);
@@ -177,9 +264,17 @@ void main() {
 
   group('欠損の扱い', () {
     test('取得できなかった指標グループは null になる（空オブジェクトを書かない）', () {
-      final b = run([
-        point(HealthDataType.STEPS, from: '2026-07-31T10:00:00', to: '2026-07-31T10:10:00', value: 1000),
-      ], ['2026-07-31']).single;
+      final b = run(
+        [
+          point(
+            HealthDataType.STEPS,
+            from: '2026-07-31T10:00:00',
+            to: '2026-07-31T10:10:00',
+            value: 1000,
+          ),
+        ],
+        ['2026-07-31'],
+      ).single;
 
       expect(b.summary.activity?.steps, 1000);
       expect(b.summary.hr, isNull, reason: '心拍が無い日は hr ごと null');
@@ -192,19 +287,37 @@ void main() {
     });
 
     test('SpO2 が比率で返る端末でも百分率に揃える', () {
-      final b = run([
-        point(HealthDataType.BLOOD_OXYGEN, from: '2026-07-31T03:00:00', value: 0.97),
-        point(HealthDataType.BLOOD_OXYGEN, from: '2026-07-31T04:00:00', value: 0.95),
-      ], ['2026-07-31']).single;
+      final b = run(
+        [
+          point(
+            HealthDataType.BLOOD_OXYGEN,
+            from: '2026-07-31T03:00:00',
+            value: 0.97,
+          ),
+          point(
+            HealthDataType.BLOOD_OXYGEN,
+            from: '2026-07-31T04:00:00',
+            value: 0.95,
+          ),
+        ],
+        ['2026-07-31'],
+      ).single;
 
       expect(b.summary.spo2?.avgPct, closeTo(96, 0.01));
       expect(b.summary.spo2?.minPct, closeTo(95, 0.01));
     });
 
     test('心拍変動は Android では RMSSD のみ埋まり SDNN は null のまま', () {
-      final b = run([
-        point(HealthDataType.HEART_RATE_VARIABILITY_RMSSD, from: '2026-07-31T03:00:00', value: 42),
-      ], ['2026-07-31']).single;
+      final b = run(
+        [
+          point(
+            HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
+            from: '2026-07-31T03:00:00',
+            value: 42,
+          ),
+        ],
+        ['2026-07-31'],
+      ).single;
 
       expect(b.summary.hrv?.rmssdMs, 42);
       expect(b.summary.hrv?.sdnnMs, isNull);
@@ -245,10 +358,18 @@ void main() {
 
   group('メタ情報', () {
     test('tz とデータ提供元を記録する', () {
-      final b = run([
-        point(HealthDataType.STEPS,
-            from: '2026-07-31T10:00:00', to: '2026-07-31T10:10:00', value: 10, source: 'com.mi.health'),
-      ], ['2026-07-31']).single;
+      final b = run(
+        [
+          point(
+            HealthDataType.STEPS,
+            from: '2026-07-31T10:00:00',
+            to: '2026-07-31T10:10:00',
+            value: 10,
+            source: 'com.mi.health',
+          ),
+        ],
+        ['2026-07-31'],
+      ).single;
 
       expect(b.summary.tz, 'Asia/Tokyo');
       expect(b.summary.sources, ['com.mi.health']);
@@ -263,12 +384,20 @@ void main() {
 
       expect(restored.date, '2026-07-31');
       expect(restored.sleep?.totalMin, b.summary.sleep?.totalMin);
-      expect(json['updatedAt'], isA<String>(), reason: 'Firestore には ISO 8601 文字列で入れる');
+      expect(
+        json['updatedAt'],
+        isA<String>(),
+        reason: 'Firestore には ISO 8601 文字列で入れる',
+      );
     });
   });
 }
 
 List<HealthDataPoint> nightOfSimple() => [
-      point(HealthDataType.SLEEP_SESSION,
-          from: '2026-07-30T23:00:00', to: '2026-07-31T07:00:00', uuid: 's'),
-    ];
+  point(
+    HealthDataType.SLEEP_SESSION,
+    from: '2026-07-30T23:00:00',
+    to: '2026-07-31T07:00:00',
+    uuid: 's',
+  ),
+];

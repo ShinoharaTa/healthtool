@@ -18,9 +18,9 @@ class HrBin {
   final double bpm;
 
   Map<String, dynamic> toJson() => {
-        't': at.toIso8601String(),
-        'bpm': double.parse(bpm.toStringAsFixed(1)),
-      };
+    't': at.toIso8601String(),
+    'bpm': double.parse(bpm.toStringAsFixed(1)),
+  };
 }
 
 /// 1日分の集約結果一式。
@@ -87,11 +87,13 @@ class DailyAggregator {
 
     final bundles = <DayBundle>[];
     for (final day in activeDays.toList()..sort()) {
-      bundles.add(_buildDay(
-        date: day,
-        points: byDay[day] ?? const [],
-        sessions: sessionsByDay[day] ?? const [],
-      ));
+      bundles.add(
+        _buildDay(
+          date: day,
+          points: byDay[day] ?? const [],
+          sessions: sessionsByDay[day] ?? const [],
+        ),
+      );
     }
     return bundles;
   }
@@ -113,59 +115,93 @@ class DailyAggregator {
     final hrValues = hrPoints.map(_num).whereType<double>().toList();
 
     final steps = _sumInt(byType[HealthDataType.STEPS]);
-    final workouts = _buildWorkouts(date, byType[HealthDataType.WORKOUT] ?? const []);
+    final workouts = _buildWorkouts(
+      date,
+      byType[HealthDataType.WORKOUT] ?? const [],
+    );
 
-    final activity = _nullIfEmpty(m.Activity(
-      steps: steps,
-      distanceM: _sum(byType[HealthDataType.DISTANCE_DELTA]),
-      activeKcal: _sum(byType[HealthDataType.ACTIVE_ENERGY_BURNED]),
-      totalKcal: _sum(byType[HealthDataType.TOTAL_CALORIES_BURNED]),
-      floors: _sum(byType[HealthDataType.FLIGHTS_CLIMBED]),
-      exerciseMin: workouts.isEmpty
-          ? null
-          : workouts.fold<double>(0, (a, w) => a + w.durationMin),
-    ), (a) => [a.steps, a.distanceM, a.activeKcal, a.totalKcal, a.floors, a.exerciseMin]);
+    final activity = _nullIfEmpty(
+      m.Activity(
+        steps: steps,
+        distanceM: _sum(byType[HealthDataType.DISTANCE_DELTA]),
+        activeKcal: _sum(byType[HealthDataType.ACTIVE_ENERGY_BURNED]),
+        totalKcal: _sum(byType[HealthDataType.TOTAL_CALORIES_BURNED]),
+        floors: _sum(byType[HealthDataType.FLIGHTS_CLIMBED]),
+        exerciseMin: workouts.isEmpty
+            ? null
+            : workouts.fold<double>(0, (a, w) => a + w.durationMin),
+      ),
+      (a) => [
+        a.steps,
+        a.distanceM,
+        a.activeKcal,
+        a.totalKcal,
+        a.floors,
+        a.exerciseMin,
+      ],
+    );
 
-    final hr = _nullIfEmpty(m.Hr(
-      restingBpm: _avg(byType[HealthDataType.RESTING_HEART_RATE]),
-      avgBpm: _mean(hrValues),
-      minBpm: hrValues.isEmpty ? null : hrValues.reduce((a, b) => a < b ? a : b),
-      maxBpm: hrValues.isEmpty ? null : hrValues.reduce((a, b) => a > b ? a : b),
-      sampleCount: hrValues.isEmpty ? null : hrValues.length,
-    ), (h) => [h.restingBpm, h.avgBpm, h.minBpm, h.maxBpm]);
+    final hr = _nullIfEmpty(
+      m.Hr(
+        restingBpm: _avg(byType[HealthDataType.RESTING_HEART_RATE]),
+        avgBpm: _mean(hrValues),
+        minBpm: hrValues.isEmpty
+            ? null
+            : hrValues.reduce((a, b) => a < b ? a : b),
+        maxBpm: hrValues.isEmpty
+            ? null
+            : hrValues.reduce((a, b) => a > b ? a : b),
+        sampleCount: hrValues.isEmpty ? null : hrValues.length,
+      ),
+      (h) => [h.restingBpm, h.avgBpm, h.minBpm, h.maxBpm],
+    );
 
     final rmssd = byType[HealthDataType.HEART_RATE_VARIABILITY_RMSSD];
-    final hrv = _nullIfEmpty(m.Hrv(
-      // Android の Health Connect は SDNN を扱わない。iOS 対応時に埋まる。
-      sdnnMs: null,
-      rmssdMs: _avg(rmssd),
-      sampleCount: rmssd?.length,
-    ), (h) => [h.sdnnMs, h.rmssdMs]);
+    final hrv = _nullIfEmpty(
+      m.Hrv(
+        // Android の Health Connect は SDNN を扱わない。iOS 対応時に埋まる。
+        sdnnMs: null,
+        rmssdMs: _avg(rmssd),
+        sampleCount: rmssd?.length,
+      ),
+      (h) => [h.sdnnMs, h.rmssdMs],
+    );
 
     final spo2Values = (byType[HealthDataType.BLOOD_OXYGEN] ?? const [])
         .map(_num)
         .whereType<double>()
         .map(_normalizeSpo2)
         .toList();
-    final spo2 = _nullIfEmpty(m.Spo2(
-      avgPct: _mean(spo2Values),
-      minPct: spo2Values.isEmpty ? null : spo2Values.reduce((a, b) => a < b ? a : b),
-      sampleCount: spo2Values.isEmpty ? null : spo2Values.length,
-    ), (s) => [s.avgPct, s.minPct]);
+    final spo2 = _nullIfEmpty(
+      m.Spo2(
+        avgPct: _mean(spo2Values),
+        minPct: spo2Values.isEmpty
+            ? null
+            : spo2Values.reduce((a, b) => a < b ? a : b),
+        sampleCount: spo2Values.isEmpty ? null : spo2Values.length,
+      ),
+      (s) => [s.avgPct, s.minPct],
+    );
 
     final sleep = sessions.isEmpty ? null : _summarizeSleep(sessions);
 
-    final body = _nullIfEmpty(m.Body(
-      weightKg: _last(byType[HealthDataType.WEIGHT]),
-      bodyFatPct: _last(byType[HealthDataType.BODY_FAT_PERCENTAGE]),
-      bmi: _last(byType[HealthDataType.BODY_MASS_INDEX]),
-    ), (b) => [b.weightKg, b.bodyFatPct, b.bmi]);
+    final body = _nullIfEmpty(
+      m.Body(
+        weightKg: _last(byType[HealthDataType.WEIGHT]),
+        bodyFatPct: _last(byType[HealthDataType.BODY_FAT_PERCENTAGE]),
+        bmi: _last(byType[HealthDataType.BODY_MASS_INDEX]),
+      ),
+      (b) => [b.weightKg, b.bodyFatPct, b.bmi],
+    );
 
-    final vitals = _nullIfEmpty(m.Vitals(
-      bodyTempC: _avg(byType[HealthDataType.BODY_TEMPERATURE]),
-      bloodPressureSys: _avg(byType[HealthDataType.BLOOD_PRESSURE_SYSTOLIC]),
-      bloodPressureDia: _avg(byType[HealthDataType.BLOOD_PRESSURE_DIASTOLIC]),
-    ), (v) => [v.bodyTempC, v.bloodPressureSys, v.bloodPressureDia]);
+    final vitals = _nullIfEmpty(
+      m.Vitals(
+        bodyTempC: _avg(byType[HealthDataType.BODY_TEMPERATURE]),
+        bloodPressureSys: _avg(byType[HealthDataType.BLOOD_PRESSURE_SYSTOLIC]),
+        bloodPressureDia: _avg(byType[HealthDataType.BLOOD_PRESSURE_DIASTOLIC]),
+      ),
+      (v) => [v.bodyTempC, v.bloodPressureSys, v.bloodPressureDia],
+    );
 
     final respiratory = _nullIfEmpty(
       m.Respiratory(avgRpm: _avg(byType[HealthDataType.RESPIRATORY_RATE])),
@@ -174,7 +210,9 @@ class DailyAggregator {
 
     // WATER はリットル単位で返るので mL に直す。
     final waterL = _sum(byType[HealthDataType.WATER]);
-    final nutrition = waterL == null ? null : m.Nutrition(waterMl: waterL * 1000);
+    final nutrition = waterL == null
+        ? null
+        : m.Nutrition(waterMl: waterL * 1000);
 
     // 心拍ビンの数から装着時間を推定する。心拍は装着中しか記録されないため、
     // 「その日どれだけ真面目に着けていたか」の代理指標になる。
@@ -183,8 +221,7 @@ class DailyAggregator {
     final sources = <String>{
       for (final p in points) p.sourceId,
       for (final s in sessions) s.source,
-    }.where((s) => s.isNotEmpty).toList()
-      ..sort();
+    }.where((s) => s.isNotEmpty).toList()..sort();
 
     return DayBundle(
       date: date,
@@ -205,7 +242,9 @@ class DailyAggregator {
         sources: sources,
         coverage: m.Coverage(
           hrCoveredMin: hrCoveredMin,
-          wornHours: double.parse((hrCoveredMin / 60).clamp(0, 24).toStringAsFixed(2)),
+          wornHours: double.parse(
+            (hrCoveredMin / 60).clamp(0, 24).toStringAsFixed(2),
+          ),
           hasSleep: sessions.isNotEmpty,
           hasSteps: steps != null && steps > 0,
         ),
@@ -254,8 +293,15 @@ class DailyAggregator {
 
     final intervals = sessionPoints.isNotEmpty
         ? sessionPoints
-            .map((p) => (id: p.uuid, from: p.dateFrom, to: p.dateTo, source: p.sourceId))
-            .toList()
+              .map(
+                (p) => (
+                  id: p.uuid,
+                  from: p.dateFrom,
+                  to: p.dateTo,
+                  source: p.sourceId,
+                ),
+              )
+              .toList()
         : _clusterStages(stagePoints);
 
     final byDay = <String, List<m.SleepSession>>{};
@@ -269,35 +315,41 @@ class DailyAggregator {
       for (final s in stagePoints) {
         final mid = _midpoint(s);
         if (mid.isBefore(iv.from) || !mid.isBefore(iv.to)) continue;
-        stages.add(m.StageElement(
-          stage: _sleepStageNames[s.type] ?? m.StageEnum.UNKNOWN,
-          startAt: s.dateFrom,
-          endAt: s.dateTo,
-        ));
+        stages.add(
+          m.StageElement(
+            stage: _sleepStageNames[s.type] ?? m.StageEnum.UNKNOWN,
+            startAt: s.dateFrom,
+            endAt: s.dateTo,
+          ),
+        );
       }
       stages.sort((a, b) => a.startAt.compareTo(b.startAt));
 
       // ステージが 1 件も無いデバイス向けに、セッション全体を 1 区間として置く。
       if (stages.isEmpty) {
-        stages.add(m.StageElement(
-          stage: m.StageEnum.UNKNOWN,
-          startAt: iv.from,
-          endAt: iv.to,
-        ));
+        stages.add(
+          m.StageElement(
+            stage: m.StageEnum.UNKNOWN,
+            startAt: iv.from,
+            endAt: iv.to,
+          ),
+        );
       }
 
-      (byDay[day] ??= []).add(m.SleepSession(
-        schemaVersion: 1,
-        id: iv.id,
-        date: day,
-        tz: time.timeZoneName,
-        startAt: iv.from,
-        endAt: iv.to,
-        inBedMin: iv.to.difference(iv.from).inSeconds / 60,
-        stages: stages,
-        source: iv.source,
-        updatedAt: _now,
-      ));
+      (byDay[day] ??= []).add(
+        m.SleepSession(
+          schemaVersion: 1,
+          id: iv.id,
+          date: day,
+          tz: time.timeZoneName,
+          startAt: iv.from,
+          endAt: iv.to,
+          inBedMin: iv.to.difference(iv.from).inSeconds / 60,
+          stages: stages,
+          source: iv.source,
+          updatedAt: _now,
+        ),
+      );
     }
 
     for (final list in byDay.values) {
@@ -342,8 +394,12 @@ class DailyAggregator {
       }
     }
 
-    final start = sessions.map((s) => s.startAt).reduce((a, b) => a.isBefore(b) ? a : b);
-    final end = sessions.map((s) => s.endAt).reduce((a, b) => a.isAfter(b) ? a : b);
+    final start = sessions
+        .map((s) => s.startAt)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    final end = sessions
+        .map((s) => s.endAt)
+        .reduce((a, b) => a.isAfter(b) ? a : b);
     final inBed = sessions.fold<double>(0, (a, s) => a + (s.inBedMin ?? 0));
 
     final deep = stageMinutes[m.StageEnum.DEEP] ?? 0;
@@ -359,7 +415,9 @@ class DailyAggregator {
       startAt: start,
       endAt: end,
       // 就寝と起床の中点。日ごとのばらつきが睡眠の規則性を表す。
-      midSleepAt: start.add(Duration(milliseconds: end.difference(start).inMilliseconds ~/ 2)),
+      midSleepAt: start.add(
+        Duration(milliseconds: end.difference(start).inMilliseconds ~/ 2),
+      ),
       inBedMin: _round(inBed),
       totalMin: _round(asleep),
       deepMin: _round(deep),
@@ -378,24 +436,27 @@ class DailyAggregator {
     for (final p in points) {
       final v = p.value;
       if (v is! WorkoutHealthValue) continue;
-      out.add(m.Workout(
-        schemaVersion: 1,
-        id: p.uuid,
-        date: date,
-        tz: time.timeZoneName,
-        type: v.workoutActivityType.name,
-        title: null,
-        startAt: p.dateFrom,
-        endAt: p.dateTo,
-        durationMin: _round(p.dateTo.difference(p.dateFrom).inSeconds / 60) ?? 0,
-        kcal: v.totalEnergyBurned?.toDouble(),
-        distanceM: v.totalDistance?.toDouble(),
-        steps: v.totalSteps,
-        avgHrBpm: null,
-        maxHrBpm: null,
-        source: p.sourceId,
-        updatedAt: _now,
-      ));
+      out.add(
+        m.Workout(
+          schemaVersion: 1,
+          id: p.uuid,
+          date: date,
+          tz: time.timeZoneName,
+          type: v.workoutActivityType.name,
+          title: null,
+          startAt: p.dateFrom,
+          endAt: p.dateTo,
+          durationMin:
+              _round(p.dateTo.difference(p.dateFrom).inSeconds / 60) ?? 0,
+          kcal: v.totalEnergyBurned?.toDouble(),
+          distanceM: v.totalDistance?.toDouble(),
+          steps: v.totalSteps,
+          avgHrBpm: null,
+          maxHrBpm: null,
+          source: p.sourceId,
+          updatedAt: _now,
+        ),
+      );
     }
     out.sort((a, b) => a.startAt.compareTo(b.startAt));
     return out;
@@ -415,7 +476,9 @@ class DailyAggregator {
     return m.Workouts(
       count: workouts.length,
       totalMin: _round(workouts.fold<double>(0, (a, w) => a + w.durationMin)),
-      totalKcal: kcal.isEmpty ? null : _round(kcal.fold<double>(0, (a, b) => a + b)),
+      totalKcal: kcal.isEmpty
+          ? null
+          : _round(kcal.fold<double>(0, (a, b) => a + b)),
       byType: byType,
     );
   }
@@ -482,7 +545,8 @@ class DailyAggregator {
   /// その日の最後に記録された値。体重のように「最新値」が意味を持つ指標に使う。
   static double? _last(List<HealthDataPoint>? points) {
     if (points == null || points.isEmpty) return null;
-    final sorted = [...points]..sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
+    final sorted = [...points]
+      ..sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
     return _round(_num(sorted.last));
   }
 

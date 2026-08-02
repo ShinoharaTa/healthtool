@@ -1,0 +1,31 @@
+version: 2
+
+# 健康データを扱うので、依存の更新は放置しない。
+# ただし毎日 PR が来ると読まなくなるため週次にまとめる。
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # パッチ更新は 1 本の PR にまとめる。個別に見る価値が薄い。
+      patch:
+        update-types: [patch]
+    ignore:
+      # agents が固定している版と一致させる必要があるため、
+      # 単独で上げると型が二重に入ってビルドが壊れる。agents と一緒に手で上げる。
+      - dependency-name: '@modelcontextprotocol/sdk'
+
+  - package-ecosystem: pub
+    directory: /app
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
