@@ -100,7 +100,7 @@ jobs:
       - run: npm ci
       - run: npm run gen:types
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5.6.0
         with:
           distribution: temurin
           java-version: '17'
