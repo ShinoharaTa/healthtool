@@ -38,7 +38,7 @@ dependencies:
   firebase_auth: ^6.5.6
   cloud_firestore: ^6.7.1
   google_sign_in: ^7.2.0
-  health: ^13.3.1
+  health: ^13.3.2
   shared_preferences: ^2.5.5
   intl: ^0.20.3
   timezone: ^0.11.1
